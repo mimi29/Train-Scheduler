@@ -1,0 +1,18 @@
+body {
+    background-color: lightgrey;
+}
+
+.label-bold {
+    background-color: navy  !important;
+    color: white;
+    font-weight: bold;
+}
+
+.label {
+    font-weight: bold !important;
+}
+
+.jumbotron {
+    background-color: rgb(97, 178, 167);
+    color: white;
+}
