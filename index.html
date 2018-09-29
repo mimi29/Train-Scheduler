@@ -21,6 +21,7 @@
         <div class="container text-center">
             <h1 class="display-4">Anytime is Train Time</h1>
             <h2>Choo Choo. Chee Chee</h2>
+            <h3>Time: <span id="currentTimeId"></span></h3>
         </div>
     </div>
     <div class="container-fluid">
@@ -66,7 +67,7 @@
                                     </div>
                                     <div class="form-group">
                                         <label for="firstTrainTime">First Train Time (HH:mm-military time)</label>
-                                        <input type="time" class="form-control" id="firstTrainTimeId"
+                                        <input type="time" max="23:59" class="form-control" id="firstTrainTimeId"
                                             placeholder="13:00">
                                     </div>
                                     <div class="form-group">

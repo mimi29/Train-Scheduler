@@ -14,49 +14,38 @@ firebase.initializeApp(config);
 
 // Create a variable to reference the database.
 var database = firebase.database();
-
-function calculateNextTrain(firstTime, tFrequency) {
-
-    // First Time (pushed back 1 year to make sure it comes before current time)
-    var firstTimeConverted = moment(firstTime, "HH:mm").subtract(1, "years");
-    console.log(firstTimeConverted);
-
-    // Current Time
-    var currentTime = moment();
-    console.log("CURRENT TIME: " + moment(currentTime).format("hh:mm"));
-
-    // Difference between the times
-    var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
-    console.log("DIFFERENCE IN TIME: " + diffTime);
-
-    // Time apart (remainder)
-    var tRemainder = diffTime % tFrequency;
-    console.log(tRemainder);
-
-    // Minute Until Train
-    tMinutesTillTrain = tFrequency - tRemainder;
-    console.log("MINUTES TILL TRAIN: " + tMinutesTillTrain);
-
-    // Next Train
-    nextTrain = moment().add(tMinutesTillTrain, "minutes");
-    console.log("ARRIVAL TIME: " + moment(nextTrain).format("hh:mm"));
-}
+var trainRef = database.ref('/trains');
 
 $(document).ready(function () {
-    console.log("ready!");
 
-    firebase.database().ref("/trains").on("child_added", function (snapshot) {
+    function updateTrainArrival() {      
+
+        trainRef.on('value', function(snapshot) {
+            var i=1;
+            snapshot.forEach(function(childSnapshot) {
+                var childData = childSnapshot.val();
+                var trainName = childData.trainName;
+                var dest = childData.destination;
+                var freq = childData.freq;
+                var startTime = childData.startTime;
+    
+                calculateNextTrain(startTime, freq);
+                var cell3 = $('#trainTable tr:eq(' + i + ') td:eq(' + 3 + ')');
+                cell3.text(moment(nextTrain).format('LT'));
+                var cell4 = $('#trainTable tr:eq(' + i + ') td:eq(' + 4 + ')');
+                cell4.text(tMinutesTillTrain);
+                i += 1;
+            });
+        });
+    }
+
+    trainRef.on("child_added", function (snapshot) {
 
         // Console.loging the last user's data
         var trainName = snapshot.val().trainName;
         var dest = snapshot.val().destination;
         var freq = snapshot.val().freq;
         var startTime = snapshot.val().startTime;
-
-        console.log(trainName);
-        console.log(dest);
-        console.log(startTime);
-        console.log(freq);
 
         calculateNextTrain(startTime, freq);
 
@@ -93,10 +82,36 @@ $(document).ready(function () {
             freq: freq
         };
 
-        // Uploads employee data to the database
-        database.ref("/trains").push(trainInfo);
-
-        // calculate the field 
-
+        // Uploads new train to the database
+        trainRef.push(trainInfo);
     })
+
+    function calculateNextTrain(firstTime, tFrequency) {
+        // First Time (pushed back 1 year to make sure it comes before current time)
+        var firstTimeConverted = moment(firstTime, "HH:mm").subtract(1, "years");
+    
+        // Current Time
+        var currentTime = moment();
+
+        // Difference between the times
+        var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+    
+        // Time apart (remainder)
+        var tRemainder = diffTime % tFrequency;
+    
+        // Minute Until Train
+        tMinutesTillTrain = tFrequency - tRemainder;
+    
+        // Next Train
+        nextTrain = moment().add(tMinutesTillTrain, "minutes");
+    }
+    
+    function updateClock() {
+        var clockTime = moment().format("HH:mm:ss");      
+         $('#currentTimeId').text(clockTime);
+    }
+
+    updateTrainArrival();
+    var myVar = setInterval(updateTrainArrival, 60000);
+    var currentT = setInterval(updateClock, 1000);
 });
